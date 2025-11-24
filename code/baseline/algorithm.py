@@ -22,21 +22,29 @@ class Edge:
 
 
 class Graph:
-    def __init__(self, width, height, n, random_seed=RANDOM_SEED):
+    def __init__(self, width, height, n, random_seed=RANDOM_SEED, points=None):
         random.seed(random_seed)
         self.width = width
         self.height = height
         self.n = n
-        text_file = open("data/points.csv", "r")
-        data = text_file.read().split()
         
-        # Generate n vertices in a rectangle with the given width and height.
+        if points is None:
+            text_file = open("data/points.csv", "r")
+            data = text_file.read().split()
+            text_file.close()
+            
+            # Generate n vertices in a rectangle with the given width and height.
+            self.vertices = [
+                Vertex(float(data[idx*2]), float(data[idx*2+1]), idx)
+                for idx in range(n)
+            ]
+        else:
+            # Use provided points
+            self.vertices = [
+                Vertex(float(points[idx][0]), float(points[idx][1]), idx)
+                for idx in range(n)
+            ]
 
-        self.vertices = [
-            Vertex(float(data[idx*2]), float(data[idx*2+1]), idx)
-            for idx in range(n)
-        ]
-        text_file.close()
         #Fully connected graph
         self.edges = {
             (i, j): Edge(self.vertices[i], self.vertices[j])
