@@ -5,7 +5,7 @@ import math
 import time
 # see https://github.com/fikisipi/elkai
 import elkai
-import kruskal_clustering as ks
+# import kruskal_clustering as ks
 
 def tsp(arr, column_index):
     train_v = arr
@@ -17,11 +17,31 @@ def tsp(arr, column_index):
         for j in range(train_d.shape[0]):
             dist[i, j] = math.sqrt(np.sum((train_v[i, :] - train_d[j, :]) ** 2))
             
-    s=elkai.solve_float_matrix(dist)
+    # s=elkai.solve_float_matrix(dist.tolist())
+    # Scale to integers for LKH
+    dist_int = (dist * 1000).astype(int)
+    
+    n_cities = len(arr)
+    if n_cities < 3:
+        # LKH requires N > 2. Handle small cases manually.
+        if n_cities == 0:
+            s = []
+        elif n_cities == 1:
+            s = [0]
+        elif n_cities == 2:
+            s = [0, 1] # Or [1, 0], distance is same
+    else:
+        s = elkai.solve_int_matrix(dist_int.tolist())
+
     sumpath=0
-    for i in range(len(s)):
-        sumpath+=dist[s[i]][s[i-1]]
-    return sumpath, s
+    if len(s) > 0:
+        for i in range(len(s)):
+            sumpath+=dist[s[i]][s[i-1]]
+    
+    # Map local indices back to global column_index
+    mapped_s = [column_index[i] for i in s]
+    
+    return sumpath, mapped_s
         
 def tspOld(arr, column_index):
     train_v = arr
